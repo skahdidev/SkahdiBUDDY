@@ -4,5 +4,5 @@ The desktop assistant that doesn't assist.
 
 ## CONTRIBUTING
 henlo fork repo maek sicc changes, then maek pull request ok ty byee
-OR
+<br>OR</br>
 if ya wanna contribute to the main speech database, message https://telegram.me/snepdev to get your email added to it
