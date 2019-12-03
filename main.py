@@ -4,11 +4,13 @@ from os import listdir
 from os.path import isfile, join
 from PIL import Image
 from random import randint
-import os, subprocess, tempfile, cv2, time
+import os, tempfile, cv2, time
 import sys, webbrowser, shutil ,random, pyttsx3, threading
-import json, ctypes, subprocess, pythoncom, wmi
+import json, ctypes, subprocess, pythoncom, subprocess, re
 import base64, urllib, requests
-global speechdatabase
+
+global speechdatabase, proclist
+print("Sorry for the shit log output in advance. I'll clean this up asap")
 
 try:
 	with open('config.ini') as data_file:
@@ -34,17 +36,22 @@ except:
 	ctypes.windll.user32.MessageBoxW(0, "Welcome to SkahdiBuddy V1.\nThis is either your very first time using me, or you messed up my config file.\nNo matter! I'll make a new one real quick!\nPlease note that SkahdiBuddy takes a moment to boot up. We're working on improving the boot time.", "Mew! SkahdiBuddy v1", 0)
 
 def updateprocesses():
-	pythoncom.CoInitialize() ## need this for running wmi in thread
-	c = wmi.WMI ()
+	procs = subprocess.check_output(['tasklist'], shell=True)
+	procs = re.split('\s+',str(procs))
 	proclist = []
-	for process in c.Win32_Process ():
-		proclist.append(process.Name.lower())
-	print(proclist)
+	for x in procs:
+		if ".exe" in x:
+			proclist.append(x.replace("K\\r\\n","").lower())
+	updateprocesses.proclist = list(set(proclist))	
 	return proclist
+
 
 ## download speech data library and load it into the db
 ## decode and encode stolen from https://stackoverflow.com/a/38223403
 ## - thanks, Ryan Barrett
+## PS. I think this entire decode/encode thing is really unnecessary. But ya'll asked for it in the group 
+## because ya'll didn't want any speech spoilers. so this one is for you.
+## PPS. speechdb.sbuddy is not encoded _yet_, sorry. We're getting there.
 def update(speechlibrarylink):
 	link = speechlibrarylink
 	openlink = urllib.request.urlopen(link).read()
@@ -190,15 +197,8 @@ direction = 'right'
 char_position = "+10+627"
 root.geometry(char_position)
 
-global proclist
-c = wmi.WMI ()
-proclist = []
-for process in c.Win32_Process ():
-	proclist.append(process.Name.lower())
-#updateproc = threading.Thread(target=updateprocesses)
-#updateproc.daemon = True
-#updateproc.start()
-#updateproc.join()
+updateprocesses()
+proclist = (updateprocesses.proclist)
 
 def popupmenu(event):
     try:
@@ -225,7 +225,7 @@ def idleloop(char_position, direction, proclist):
 	## 1 - play/think
 	## 2 - talk
 	walkspeed = configsetting['walkdelay']
-	talkloops = 10
+	talkloops = 5 ## this var runs the talking animation for 5 loops before it returns back to the idle animation
 	talknumber = 0
 	while 1: #loop for idle animation
 		DIR = "./anims" + '/sprite_thinking/' +direction+"/"
@@ -328,10 +328,11 @@ def idleloop(char_position, direction, proclist):
 					pass
 				elif talkvar == False:
 					print("I should be talking -",direction)
-
 					talkvar = True ## this makes skahdi speak. please set to false when done speaking.
-					
 					## speech thread here.
+					updateprocesses()
+					proclist = (updateprocesses.proclist)
+					print("Items in process list",len(proclist))
 					speak = threading.Thread(target=saysomething, args=(char_position,proclist,))
 					speak.daemon = True
 					speak.start()
@@ -370,43 +371,59 @@ def saysomething(char_position,proclist):
 	except Exception as e:
 		...
 	
+	print("booting blocks")
 	lr_block = int(char_position.split("+")[1])  ## Left - Right
 	ud_block = int(char_position.split("+")[-1]) ## Up - Down
-	bubble = tk.Tk()
-	bubble.config(background = "white")
-	bubble.overrideredirect(True)# Make window invisible
-	bubble.wm_attributes("-topmost", True)# Keep skahdi on top even after min
+	print("Spawning new tk bubble")
+	
+	## this block needs to run once, then never again...
+	try:
+		print(bubble)
+		bubble.destroy()
+		T.destroy()
+	except:
+		bubble = tk.Tk()
+		print("tk.tk set")
+		bubble.config(background = "white")
+		bubble.overrideredirect(True)# Make window invisible
+		bubble.wm_attributes("-topmost", True)# Keep skahdi on top even after min
+	
+	print("bubble spawned")
 	#bubble.wm_attributes("-transparentcolor", "white")
 	bubbleposition = "+"+str(lr_block)+"+"+str(ud_block-randint(50,300))
 	bubble.geometry(bubbleposition)	
+	print("bubble geometry set")
 	
 	## check for matching processes
 	for proc in speechdatabase.keys():
-		if proc.lower() in proclist:
-			print("I FOUND "+proc)
-			selectedcomeback = random.choice(speechdatabase[proc]['comebacks'])
-			T = tk.Text(bubble, height=1, width = len(selectedcomeback), fg = "black", bg = "white")
-			T.configure(relief = GROOVE, font=("Courier", 15))
-			T.pack()
-			T.insert(tk.END, selectedcomeback)
-			T.configure(state = "disabled")
-			bubble.update()
-			bubble.update_idletasks()
-			print(selectedcomeback)
-			break
+		try:
+			if proc.lower() in proclist:
+				print("I FOUND "+proc)
+				selectedcomeback = random.choice(speechdatabase[proc]['comebacks'])
+				T = tk.Text(bubble, height=1, width = len(selectedcomeback), fg = "black", bg = "white")
+				T.configure(relief = GROOVE, font=("Courier", 15))
+				T.pack()
+				T.insert(tk.END, selectedcomeback)
+				T.configure(state = "disabled")
+				bubble.update()
+				bubble.update_idletasks()
+				print(selectedcomeback)
+				break
+		except Exception as errormsg:
+			print("-->",errormsg)
 			
+	try:
+		## text width is equal to number of letters in comeback
+		engine = pyttsx3.init()
+		engine.setProperty('rate',configsetting['speech']['wordsperminute']) # wordsperminute
+		engine.setProperty('volume',configsetting['speech']['speechvolume']) # speechvolume
+		engine.say(selectedcomeback)
+		engine.runAndWait()
 
-	## text width is equal to number of letters in comeback
-	engine = pyttsx3.init()
-	engine.setProperty('rate',configsetting['speech']['wordsperminute']) # wordsperminute
-	engine.setProperty('volume',configsetting['speech']['speechvolume']) # speechvolume
-	engine.say(selectedcomeback)
-	engine.runAndWait()
-
-	print("Reached the mainloop")
-	T.destroy()
-	bubble.destroy()
-
+		print("Reached the mainloop")
+	except:
+		print("--> I don't think I found any processes")
+		pass
 	
 def save_config():
 	j = json.dumps(configsetting, indent=4)
@@ -439,7 +456,6 @@ def hibernate():
 
 popup = Menu(root, tearoff=1, title="SB (0.1)", relief=RAISED)
 #popup.add_command(label="Tell me a joke")
-popup.add_separator()
 popup.add_separator()
 popup.add_command(label="❤-Donate-❤", command=openkofi)
 popup.add_command(label="Pause/Play", command=hibernate)
