@@ -194,7 +194,8 @@ root.overrideredirect(True)# Make window invisible
 root.wm_attributes("-topmost", True)# Keep skahdi on top even after min
 root.wm_attributes("-transparentcolor", "white")
 direction = 'right'
-char_position = "+10+627"
+screen_height = root.winfo_screenheight()
+char_position = "+10+"+str(screen_height-141)
 root.geometry(char_position)
 
 updateprocesses()
