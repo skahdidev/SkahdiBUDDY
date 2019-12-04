@@ -8,6 +8,6 @@ henlo fork repo maek sicc changes, then maek pull request ok ty byee
 if ya wanna contribute to the main speech database, message https://telegram.me/snepdev to get your email added to it
 
 ## BINARIES?
-ye. working on it. check back soon for V1 link<br>
-Here's what I used to compile SB: *pyinstaller.exe --onefile --icon=icon.ico --hidden-import=pyttsx3;ctypes --add-data msvcr100.dll;. skahdibuddy.p*<br>
+[Windows x64 V1](https://www.dropbox.com/sh/u7iiy8iqoh6jpl0/AADlgGzhBFg9MtIpuVZ4lcXKa?dl=0)<br>
+Here's what I used to compile SB: `pyinstaller.exe --onefile --icon=icon.ico --hidden-import=pyttsx3;ctypes --add-data msvcr100.dll;. skahdibuddy.p`<br>
 (for some reason --noconsole breaks the entire thing)
