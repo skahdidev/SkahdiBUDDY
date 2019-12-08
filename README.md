@@ -9,7 +9,8 @@ if ya wanna contribute to the main speech database, message https://telegram.me/
 
 ## BINARIES
 [Windows x64 V1](https://www.dropbox.com/sh/u7iiy8iqoh6jpl0/AADlgGzhBFg9MtIpuVZ4lcXKa?dl=0)<br>
-Here's what I used to compile SB: `pyinstaller.exe --onefile --icon=icon.ico --hidden-import=pyttsx3;ctypes --add-data msvcr100.dll;. skahdibuddy.p`<br>
+Here's what I used to compile SB:<br>
+`pyinstaller.exe --onefile --icon=icon.ico --hidden-import=pyttsx3;ctypes --add-data msvcr100.dll;. skahdibuddy.py`<br>
 (for some reason --noconsole breaks the entire thing)
 
 ## BUGS
