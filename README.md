@@ -15,4 +15,4 @@ Here's what I used to compile SB:<br>
 ## BUGS
 __V1__<br>
 -> Screen Width capped, making SB clip when she's not at the edges of the screen.<br>
-You can report bugs (here)[https://t.me/skahdibuddy], if you have telegram. Else just comment on the dropbox link.
+You can report bugs by messaging me [here](https://t.me/skahdibuddy), if you have telegram. Else just comment on the dropbox link.
